@@ -2,6 +2,7 @@
 #include <conio.h>
 #include <windows.h>
 #include <direct.h>
+#include <time.h>
 
 #define MAXSNAKESIZE 100
 
@@ -68,34 +69,31 @@ class Point {
 		}
 };
 
-class Fruit {
-	
-};
-
 
 class Snake {
 	private:
 		Point* cell[MAXSNAKESIZE];
 		int size;
 		char dir;
-		Fruit fruit;
+		Point fruit;
 	public:
 		Snake() {
 			size = 1;
-			//dir = 'd';
 			cell[0] = new Point(10, 10);
 			for (int i = 1; i < MAXSNAKESIZE; i++) {
 				cell[i] = NULL;
 			}
+			fruit.SetPoint(rand()%50, rand()%25);
 		}
 
 		void AddCell(int x, int y) {
 			cell[size++] = new Point(x, y);
 		}
+		
 		void TurnUp() {
 			dir = 'w';
 		}
-			void TurnDown() {
+		void TurnDown() {
 			dir = 's';
 		}
 		void TurnRight() {
@@ -104,12 +102,13 @@ class Snake {
 		void TurnLeft() {
 			dir = 'a';
 		}
-		void Move() {
+		
+		void Move() {	
+			system("cls");
 			
-			for (int i = size-1; i > 0; i--) {
-				cell[i]->CopyPos(cell[i-1]);
+			for (int i=size-1; i>0; i--) {
+				cell[i-1]->CopyPos(cell[i]);
 			}
-			
 			
 			switch(dir) {
 				case 'w':
@@ -126,25 +125,37 @@ class Snake {
 					break;
 			}
 			
+			if (fruit.GetX() == cell[0]->GetX() && fruit.GetY() == cell[0]->GetY()) {
+				AddCell(0, 0);
+				fruit.SetPoint(rand()%50, rand()%25);	
+			}
+			
 			for (int i = 0; i < size; i++) {
 				cell[i]->Draw();
 			}
+			fruit.Draw();			
 			
-			Sleep(100);
+			Sleep(50);
+		}
+		
+		void Debug() {			
+			for (int i = 0; i < size; i++) {
+				cell[i]->Debug();
+			}
 		}
 	
 };
 
 
 int main(){
-	
+	srand((unsigned)time(NULL));
 	Snake snake;
-	char op = 's';
+	char key = 's';
 	do {
 		if (kbhit()) {
-			op = getch();
+			key = getch();
 		}
-		switch(op) {
+		switch(key) {
 			case 'w':
 			case 'W':
 				snake.TurnUp();
@@ -163,7 +174,7 @@ int main(){
 				break;
 		}
 		snake.Move();
-	} while (op != 'q');
+	} while (key != 'q');
 	
 	return 0;
 }
