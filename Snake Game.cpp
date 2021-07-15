@@ -5,6 +5,8 @@
 #include <time.h>
 
 #define MAXSNAKESIZE 100
+#define MAXFRAMEX 119
+#define MAXFRAMEY 29
 
 using namespace std;
 
@@ -42,19 +44,31 @@ class Point {
 		}
 		void MoveUp() {
 			y--;
+			if (y < 0) {
+				y = MAXFRAMEY;
+			}
 		}
 		void MoveDown() {
 			y++;
+			if (y > MAXFRAMEY) {
+				y = 0;
+			}
 		}
 		void MoveRight() {
 			x++;
+			if (x > MAXFRAMEX) {
+				x = 0;
+			}
 		}
 		void MoveLeft() {
 			x--;
+			if (x < 0) {
+				x = MAXFRAMEX;
+			}
 		}
-		void Draw() {
+		void Draw(char item) {
 			gotoxy(x, y);
-			cout << "*";
+			cout << item;
 		}
 		void Earse() {
 			gotoxy(x, y);
@@ -63,6 +77,12 @@ class Point {
 		void CopyPos(Point * p) {
 			p->x = x;
 			p->y = y;
+		}
+		int IsEqual(Point* p) {
+			if (p->x == x && p->y == y) {
+				return 1;
+			}
+			return 0;
 		}
 		void Debug() {
 			cout << "(" << x << ", " << y << ")";
@@ -76,6 +96,7 @@ class Snake {
 		int size;
 		char dir;
 		Point fruit;
+		int isAlive;
 	public:
 		Snake() {
 			size = 1;
@@ -83,7 +104,8 @@ class Snake {
 			for (int i = 1; i < MAXSNAKESIZE; i++) {
 				cell[i] = NULL;
 			}
-			fruit.SetPoint(rand()%50, rand()%25);
+			fruit.SetPoint(rand()%MAXFRAMEX, rand()%MAXFRAMEY);
+			isAlive = 1;
 		}
 
 		void AddCell(int x, int y) {
@@ -91,20 +113,37 @@ class Snake {
 		}
 		
 		void TurnUp() {
-			dir = 'w';
+			if (dir != 's') {				
+				dir = 'w';
+			}
 		}
-		void TurnDown() {
-			dir = 's';
+		void TurnDown() {  
+			if (dir != 'w') {	
+				dir = 's';
+			}
 		}
 		void TurnRight() {
-			dir = 'd';
+			if (dir != 'a') {	
+				dir = 'd';
+			}
 		}
 		void TurnLeft() {
-			dir = 'a';
+			if (dir != 'd') {	
+				dir = 'a';
+			}
 		}
 		
 		void Move() {	
 			system("cls");
+			
+			if (!isAlive) {
+				cout << "THUA roi leu leu :P\n";
+				cout << "Diem cua ban: " << (size-1)*10 << "\n";
+				cout << "Ban co muon choi lai?";
+				getch();
+				isAlive = 1;
+				size = 1;
+			}
 			
 			for (int i=size-1; i>0; i--) {
 				cell[i-1]->CopyPos(cell[i]);
@@ -125,17 +164,30 @@ class Snake {
 					break;
 			}
 			
+			if (SelfCollision()) {
+				isAlive = 0;
+			}
+			
 			if (fruit.GetX() == cell[0]->GetX() && fruit.GetY() == cell[0]->GetY()) {
 				AddCell(0, 0);
-				fruit.SetPoint(rand()%50, rand()%25);	
+				fruit.SetPoint(rand()%MAXFRAMEX, rand()%MAXFRAMEY);
 			}
 			
 			for (int i = 0; i < size; i++) {
-				cell[i]->Draw();
+				cell[i]->Draw('*');
 			}
-			fruit.Draw();			
+			fruit.Draw('O');			
 			
-			Sleep(50);
+			Sleep(10);
+		}
+		
+		int SelfCollision() {
+			for (int i=1; i<size; i++) {
+				if (cell[0]->IsEqual(cell[i])) {
+					return 1;
+				}
+			}
+			return 0;
 		}
 		
 		void Debug() {			
